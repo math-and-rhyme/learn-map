@@ -1,18 +1,109 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { users } from "./models/auth";
+import { relations } from "drizzle-orm";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+// Re-export auth models
+export * from "./models/auth";
+
+// === ENUMS ===
+export const nodeTypeEnum = pgEnum("node_type", [
+  "article",
+  "book",
+  "video",
+  "course",
+  "project",
+  "other"
+]);
+
+export const nodeStatusEnum = pgEnum("node_status", [
+  "not_started",
+  "in_progress",
+  "completed"
+]);
+
+// === TABLE DEFINITIONS ===
+export const roadmaps = pgTable("roadmaps", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  dailyFocusTime: integer("daily_focus_time").default(60), // in minutes
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const nodes = pgTable("nodes", {
+  id: serial("id").primaryKey(),
+  roadmapId: integer("roadmap_id").notNull().references(() => roadmaps.id, { onDelete: "cascade" }),
+  parentId: integer("parent_id"), // Self-reference for hierarchy
+  title: text("title").notNull(),
+  type: nodeTypeEnum("type").default("other").notNull(),
+  topic: text("topic"),
+  resourceUrl: text("resource_url"),
+  timeEstimate: integer("time_estimate").default(0), // in minutes
+  status: nodeStatusEnum("status").default("not_started").notNull(),
+  content: text("content"), // Markdown notes
+  order: integer("order").default(0), // For sorting siblings
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+// === RELATIONS ===
+export const roadmapsRelations = relations(roadmaps, ({ one, many }) => ({
+  user: one(users, {
+    fields: [roadmaps.userId],
+    references: [users.id],
+  }),
+  nodes: many(nodes),
+}));
+
+export const nodesRelations = relations(nodes, ({ one, many }) => ({
+  roadmap: one(roadmaps, {
+    fields: [nodes.roadmapId],
+    references: [roadmaps.id],
+  }),
+  parent: one(nodes, {
+    fields: [nodes.parentId],
+    references: [nodes.id],
+    relationName: "parent_child",
+  }),
+  children: many(nodes, {
+    relationName: "parent_child",
+  }),
+}));
+
+// === BASE SCHEMAS ===
+export const insertRoadmapSchema = createInsertSchema(roadmaps).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNodeSchema = createInsertSchema(nodes).omit({ id: true, createdAt: true, updatedAt: true, completedAt: true });
+
+// === EXPLICIT API CONTRACT TYPES ===
+
+// Base types
+export type Roadmap = typeof roadmaps.$inferSelect;
+export type InsertRoadmap = z.infer<typeof insertRoadmapSchema>;
+export type Node = typeof nodes.$inferSelect;
+export type InsertNode = z.infer<typeof insertNodeSchema>;
+
+// Request types
+export type CreateRoadmapRequest = InsertRoadmap;
+export type UpdateRoadmapRequest = Partial<InsertRoadmap>;
+export type CreateNodeRequest = InsertNode;
+export type UpdateNodeRequest = Partial<InsertNode>;
+export type ReorderNodesRequest = {
+  nodeIds: number[];
+  parentId: number | null;
+};
+
+// Response types
+export type RoadmapResponse = Roadmap & {
+  completionPercentage?: number;
+  totalTimeEstimate?: number;
+  totalTimeLogged?: number;
+};
+
+export type NodeResponse = Node & {
+  children?: NodeResponse[];
+};
