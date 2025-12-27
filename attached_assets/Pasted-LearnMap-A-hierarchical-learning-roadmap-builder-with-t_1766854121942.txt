@@ -1,0 +1,39 @@
+LearnMap
+A hierarchical learning roadmap builder with time-based progress tracking.
+
+1. DATA MODEL: Roadmaps & Nodes
+*   A user creates Roadmaps.
+*   Each Roadmap starts with a root node named "Intro" (editable).
+*   Nodes represent learning items. Each node has:
+    *   Core: Name, Type (Article, Book, Video, Course, Project, Else - each with a distinct icon), Topic (tag), Resource Link.
+    *   Effort: Time Estimation (manually entered, OR auto-calculated from Pages for books/articles or Duration (hh:mm) for videos).
+    *   Progress: Status (Not Started / In Progress / Completed), Completed Date.
+    *   Organization: 
+Parent Node (optional, for creating sub-sections). 
+Previous Node (optional, for ordering of the nodes. there is an arrow from a previous node to the given).
+    *   Notes: Each node has a dedicated, full-featured notes panel supporting Markdown and image paste.
+
+2. PRIMARY UI: THE TREE/OUTLINE VIEW
+*   Nodes are displayed in a vertical outline, where to each node there is an arrow from the previous one.
+*   Parent Nodes can be expanded/collapsed to show/hide their children.
+
+3. SECONDARY UI: THE FLAT LIST VIEW
+*   Just a list of nodes.
+*   Sorting Logic: The list reflects the tree hierarchy (parent, then its children indented in a toggle) and respects the manual order set in the Tree View.
+*   "Lonely" nodes (no parent) appear in the order they were created.
+*   Drag-and-Drop Reordering: In this view users can drag nodes to reorder them.
+    *   Dragging a Parent Node moves it and its children.
+    *   Dragging is only allowed within the same hierarchical level (children in the scope of the parent, nodes among nodes – can't become a child of another node, until that's done manually by adding the parent).
+
+4. PROGRESS DASHBOARD (Above the Tree and List)
+*   Node Metrics: Total Nodes, Completed Nodes, Overall Completion %.
+*   Time Metrics:
+    *   Total Estimated Time (sum of all node time estimates).
+    *   Time "Logged" (sum of time for completed nodes).
+    *   Time Remaining.
+*   Pace Forecasting:
+    *   User setting: "Daily Focus Time (hours)".
+    *   Calculates: Days Remaining = Time Remaining / Daily Focus Time.
+    *   Calculates: Projected Completion Date = Today + Days Remaining.
+
+
