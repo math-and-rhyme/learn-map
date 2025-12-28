@@ -89,7 +89,54 @@ function NodeItem({
   };
 
   const Icon = getNodeIcon(node.type);
+  // return (
+  //   <div className="select-none">
+  //     <div 
+  //       className={cn(
+  //         "group flex items-center py-2 px-3 rounded-lg cursor-pointer transition-all duration-150 border border-transparent hover:shadow-sm",
+  //         isSelected 
+  //           ? "bg-primary/10 text-primary border-primary/20 shadow-sm" 
+  //           : "hover:bg-accent hover:text-accent-foreground",
+  //         depth > 0 && "ml-6" // Increased indentation
+  //       )}
+  //       style={{ 
+  //         marginLeft: `${depth * 1.5}rem`,
+  //         borderLeft: depth > 0 ? "2px solid #e5e7eb" : "none" // Add vertical line for hierarchy
+  //       }}
+  //       onClick={() => onSelect(node)}
+  //     >
+  //       {/* Rest of the NodeItem component... */}
+  //     </div>
 
+  //     {/* Children container with better tree lines */}
+  //     {isOpen && hasChildren && (
+  //       <div 
+  //         className="relative"
+  //         style={{ 
+  //           marginLeft: `${depth * 1.5 + 0.75}rem` 
+  //         }}
+  //       >
+  //         {/* Vertical line connecting parent to children */}
+  //         <div 
+  //           className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-300"
+  //           style={{ height: 'calc(100% - 1rem)' }}
+  //         />
+  //         {children.map(child => (
+  //           <NodeItem 
+  //             key={child.id}
+  //             node={child}
+  //             roadmapId={roadmapId}
+  //             getChildren={getChildren}
+  //             onSelect={onSelect}
+  //             isSelected={selectedNodeId === child.id}
+  //             depth={depth + 1}
+  //           />
+  //         ))}
+  //         <AddNodeButton roadmapId={roadmapId} parentId={node.id} depth={depth + 1} />
+  //       </div>
+  //     )}
+  //   </div>
+  // );
   return (
     <div className="select-none">
       <div 
